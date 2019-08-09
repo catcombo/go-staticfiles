@@ -1,4 +1,4 @@
-module go-staticfiles
+module github.com/catcombo/go-staticfiles
 
 go 1.12
 
