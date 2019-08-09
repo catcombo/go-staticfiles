@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	staticfiles "go-staticfiles"
+	"github.com/catcombo/go-staticfiles"
 	"os"
 )
 
