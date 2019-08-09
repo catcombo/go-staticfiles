@@ -1,0 +1,15 @@
+@import "import.css";
+
+div {
+    background: url("../img/pix.png");
+}
+
+p {
+    background: url("http://example.com/background.png");
+}
+
+span {
+    background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=");
+}
+
+/*# sourceMappingURL=style.css.map */
