@@ -110,7 +110,7 @@ func (s *Storage) collectFiles() error {
 			storagePath := filepath.Join(storageDir, filepath.Base(hashedPath))
 
 			if _, err := os.Stat(storagePath); os.IsNotExist(err) {
-				err = os.MkdirAll(storageDir, 0700)
+				err = os.MkdirAll(storageDir, 0755)
 				if err != nil {
 					return err
 				}
