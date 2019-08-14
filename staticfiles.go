@@ -108,7 +108,7 @@ func (s *Storage) collectFiles() error {
 
 			relPath := strings.TrimPrefix(path, dir)
 			storageDir := filepath.Join(s.Root, filepath.Dir(relPath))
-			storagePath := filepath.Join(storageDir, filepath.Base(hashedPath))
+			storagePath := filepath.ToSlash(filepath.Join(storageDir, filepath.Base(hashedPath)))
 
 			if _, err := os.Stat(storagePath); os.IsNotExist(err) {
 				err = os.MkdirAll(storageDir, 0755)
@@ -129,7 +129,7 @@ func (s *Storage) collectFiles() error {
 			s.FilesMap[relPath] = &StaticFile{
 				Path:           path,
 				RelPath:        relPath,
-				StoragePath:    filepath.ToSlash(storagePath),
+				StoragePath:    storagePath,
 				StorageRelPath: strings.TrimPrefix(storagePath, s.Root),
 			}
 			return nil
