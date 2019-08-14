@@ -3,17 +3,12 @@ package staticfiles
 import (
 	"path/filepath"
 	"regexp"
-	"strings"
 )
 
 func normalizeDirPath(path string) string {
+	path = filepath.Clean(path)
 	path = filepath.ToSlash(path)
-
-	if !strings.HasSuffix(path, "/") {
-		path += "/"
-	}
-
-	return path
+	return path + "/"
 }
 
 func findSubmatchGroup(regex *regexp.Regexp, s, groupName string) string {
