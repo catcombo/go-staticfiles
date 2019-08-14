@@ -100,6 +100,7 @@ func (s *Storage) collectFiles() error {
 				return nil
 			}
 
+			path = filepath.ToSlash(path)
 			hashedPath, err := s.hashFilename(path)
 			if err != nil {
 				return err
