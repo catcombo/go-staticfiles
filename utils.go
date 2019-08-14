@@ -1,11 +1,14 @@
 package staticfiles
 
 import (
+	"path/filepath"
 	"regexp"
 	"strings"
 )
 
-func appendTrailingSlash(path string) string {
+func normalizeDirPath(path string) string {
+	path = filepath.ToSlash(path)
+
 	if !strings.HasSuffix(path, "/") {
 		path += "/"
 	}

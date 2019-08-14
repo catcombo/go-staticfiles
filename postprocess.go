@@ -44,7 +44,7 @@ func PostProcessCSS(storage *Storage, file *StaticFile) error {
 			}
 
 			urlFileName := filepath.Base(url)
-			urlFilePath := filepath.Join(filepath.Dir(file.Path), url)
+			urlFilePath := filepath.ToSlash(filepath.Join(filepath.Dir(file.Path), url))
 
 			for _, file := range storage.FilesMap {
 				if file.Path == urlFilePath {

@@ -29,7 +29,7 @@ type Storage struct {
 
 func NewStorage(root string) *Storage {
 	s := &Storage{
-		Root:     appendTrailingSlash(root),
+		Root:     normalizeDirPath(root),
 		FilesMap: make(map[string]*StaticFile),
 	}
 	s.RegisterRule(PostProcessCSS)
@@ -38,7 +38,7 @@ func NewStorage(root string) *Storage {
 }
 
 func (s *Storage) AddInputDir(path string) {
-	s.inputDirs = append(s.inputDirs, appendTrailingSlash(path))
+	s.inputDirs = append(s.inputDirs, normalizeDirPath(path))
 }
 
 func (s *Storage) RegisterRule(rule PostProcessRule) {
@@ -129,7 +129,7 @@ func (s *Storage) collectFiles() error {
 			s.FilesMap[relPath] = &StaticFile{
 				Path:           path,
 				RelPath:        relPath,
-				StoragePath:    storagePath,
+				StoragePath:    filepath.ToSlash(storagePath),
 				StorageRelPath: strings.TrimPrefix(storagePath, s.Root),
 			}
 			return nil
