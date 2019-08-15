@@ -7,11 +7,14 @@ import (
 	"path/filepath"
 )
 
+// Manifest file name. It will be stored in the Storage.Root directory.
 const ManifestFilename string = "staticfiles.json"
 const ManifestVersion int = 1
 
 var ErrManifestVersionMismatch = errors.New("manifest version mismatch")
 
+// Manifest contains mapping of the original relative file paths
+// to the storage relative file paths.
 type ManifestScheme struct {
 	Paths   map[string]string `json:"paths"`
 	Version int               `json:"version"`
@@ -41,10 +44,7 @@ func (s *Storage) saveManifest() error {
 	return err
 }
 
-// Loads data from ManifestFilename, stored in the Storage.Root
-// directory, to the Storage.FilesMap. Manifest contains files
-// mapping from the original relative paths to the storage relative
-// paths.
+// LoadManifest loads data from ManifestFilename to the Storage.FilesMap.
 func (s *Storage) LoadManifest() error {
 	var manifest *ManifestScheme
 	manifestPath := filepath.Join(s.Root, ManifestFilename)
