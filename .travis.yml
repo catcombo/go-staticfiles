@@ -6,5 +6,9 @@ go:
 env:
   - GO111MODULE=on
 
+os:
+  - linux
+  - windows
+
 script:
   - go test -v ./...

@@ -1,16 +1,14 @@
 package staticfiles
 
 import (
+	"path/filepath"
 	"regexp"
-	"strings"
 )
 
-func appendTrailingSlash(path string) string {
-	if !strings.HasSuffix(path, "/") {
-		path += "/"
-	}
-
-	return path
+func normalizeDirPath(path string) string {
+	path = filepath.Clean(path)
+	path = filepath.ToSlash(path)
+	return path + "/"
 }
 
 func findSubmatchGroup(regex *regexp.Regexp, s, groupName string) string {

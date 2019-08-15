@@ -9,9 +9,9 @@ type strictFileSystem struct {
 	http.FileSystem
 }
 
-// Returns http.FileSystem implementation to be used in http.FileServer
-// to serve static files. disableDirList param allows to disable directories
-// listing (in opposite to as it goes by default with http.Dir).
+// FileSystem returns http.FileSystem implementation to be used in http.FileServer
+// to serve static files. disableDirList allows to disable directories
+// listing (in opposite to as it works with http.Dir).
 func FileSystem(path string, disableDirList bool) http.FileSystem {
 	if disableDirList {
 		return &strictFileSystem{http.Dir(path)}

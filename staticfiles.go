@@ -1,3 +1,12 @@
+// Package staticfiles is an asset manager for versioning static files in web applications.
+//
+// It collects asset files (CSS, JS, images, etc.) from a different locations (including subdirectories),
+// appends hash sum of each file to its name and copies files to the target directory
+// to be served by http.FileServer.
+//
+// This approach allows to serve files without having to clear a CDN or browser cache every time
+// the files was changed. This also allows to use aggressive caching on CDN and HTTP headers
+// to implement so called "cache hierarchy strategy" (https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching#invalidating_and_updating_cached_responses).
 package staticfiles
 
 import (
@@ -11,12 +20,13 @@ import (
 )
 
 type StaticFile struct {
-	Path           string
-	RelPath        string
-	StoragePath    string
-	StorageRelPath string
+	Path           string // Original file path
+	RelPath        string // Original file path relative to the one of the Storage.inputDirs
+	StoragePath    string // Storage file path
+	StorageRelPath string // Storage file path relative to the Storage.Root
 }
 
+// PostProcessRule describes the type of a post-process rule functions.
 type PostProcessRule func(*Storage, *StaticFile) error
 
 type Storage struct {
@@ -27,9 +37,11 @@ type Storage struct {
 	verbose          bool
 }
 
+// NewStorage returns new Storage initialized with the root directory and
+// registered rule to post-process CSS files.
 func NewStorage(root string) *Storage {
 	s := &Storage{
-		Root:     appendTrailingSlash(root),
+		Root:     normalizeDirPath(root),
 		FilesMap: make(map[string]*StaticFile),
 	}
 	s.RegisterRule(PostProcessCSS)
@@ -38,13 +50,14 @@ func NewStorage(root string) *Storage {
 }
 
 func (s *Storage) AddInputDir(path string) {
-	s.inputDirs = append(s.inputDirs, appendTrailingSlash(path))
+	s.inputDirs = append(s.inputDirs, normalizeDirPath(path))
 }
 
 func (s *Storage) RegisterRule(rule PostProcessRule) {
 	s.postProcessRules = append(s.postProcessRules, rule)
 }
 
+// SetVerboseOutput toggles verbose output to the standard logger.
 func (s *Storage) SetVerboseOutput(verbose bool) {
 	s.verbose = verbose
 }
@@ -100,6 +113,7 @@ func (s *Storage) collectFiles() error {
 				return nil
 			}
 
+			path = filepath.ToSlash(path)
 			hashedPath, err := s.hashFilename(path)
 			if err != nil {
 				return err
@@ -107,7 +121,7 @@ func (s *Storage) collectFiles() error {
 
 			relPath := strings.TrimPrefix(path, dir)
 			storageDir := filepath.Join(s.Root, filepath.Dir(relPath))
-			storagePath := filepath.Join(storageDir, filepath.Base(hashedPath))
+			storagePath := filepath.ToSlash(filepath.Join(storageDir, filepath.Base(hashedPath)))
 
 			if _, err := os.Stat(storagePath); os.IsNotExist(err) {
 				err = os.MkdirAll(storageDir, 0755)
@@ -159,11 +173,9 @@ func (s *Storage) postProcessFiles() error {
 	return nil
 }
 
-// Collects files from Storage.inputDir (including subdirectories),
-// compute hash of each file, append hash sum to the filenames,
-// apply post-process rules, copy files to the Storage.Root directory
-// along with the manifest file, containing map original paths to
-// the storage paths.
+// CollectStatic collects files from the Storage.inputDirs (including subdirectories),
+// appends hash sum of each file to its name, applies post-processing rules and
+// copies files and manifest to the Storage.Root directory.
 func (s *Storage) CollectStatic() error {
 	err := os.MkdirAll(s.Root, 0755)
 	if err != nil {
@@ -188,8 +200,8 @@ func (s *Storage) CollectStatic() error {
 	return nil
 }
 
-// Resolve file path relative to the one of the Storage.inputDirs
-// to the storage path relative to the Storage.Root.
+// Resolve returns relative storage file path from
+// the relative original file path.
 func (s *Storage) Resolve(relPath string) string {
 	if sf, ok := s.FilesMap[relPath]; ok {
 		return sf.StorageRelPath

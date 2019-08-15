@@ -71,7 +71,7 @@ func (s *StorageTestSuite) TestCollectStatic() {
 
 	s.True(
 		reflect.DeepEqual(files1, files2),
-		"The list of files in `%s` and `%s` differs from each other", inputDir, outputDir,
+		"The list of files in `%s` and `%s` differs from each other", expectedDir, outputDir,
 	)
 }
 
@@ -114,7 +114,7 @@ func (s *StorageTestSuite) TestPostProcess_UpdateFile() {
 
 	// Truncate image file
 	imgPath := filepath.Join(inputDir, "pix.png")
-	f, err := os.OpenFile(imgPath, os.O_TRUNC, 0644)
+	f, err := os.OpenFile(imgPath, os.O_RDWR|os.O_TRUNC, 0644)
 	s.Require().NoError(err)
 	f.Close()
 

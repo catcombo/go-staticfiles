@@ -23,6 +23,12 @@ func TestStrictFileSystem_OpenFile(t *testing.T) {
 	assert.NotNil(t, f)
 }
 
+func TestStrictFileSystem_FileNotExist(t *testing.T) {
+	fs := FileSystem("testdata", true)
+	_, err := fs.Open("null")
+	assert.True(t, os.IsNotExist(err))
+}
+
 func TestStrictFileSystem_OpenDir(t *testing.T) {
 	fs := FileSystem("testdata", true)
 

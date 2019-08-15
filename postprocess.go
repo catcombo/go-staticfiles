@@ -16,11 +16,12 @@ var (
 	}
 )
 
-// Post-process CSS files to fix references to the static files
-// in the following cases:
-// - url("../path/file.ext")
-// - @import "path/file.ext"
-// - sourceMappingURL=style.css.map
+// PostProcessCSS fixes files references in CSS files to point
+// to the hashed versions of the files in the following cases:
+//
+// 		@import "path/file.ext"
+// 		url("path/file.ext")
+// 		sourceMappingURL=file.ext.map
 func PostProcessCSS(storage *Storage, file *StaticFile) error {
 	if filepath.Ext(file.Path) != ".css" {
 		return nil
@@ -44,7 +45,7 @@ func PostProcessCSS(storage *Storage, file *StaticFile) error {
 			}
 
 			urlFileName := filepath.Base(url)
-			urlFilePath := filepath.Join(filepath.Dir(file.Path), url)
+			urlFilePath := filepath.ToSlash(filepath.Join(filepath.Dir(file.Path), url))
 
 			for _, file := range storage.FilesMap {
 				if file.Path == urlFilePath {
