@@ -30,8 +30,7 @@ There are two ways to collect files:
 
     Init storage in your code:
     ```go
-    storage := staticfiles.NewStorage("web/staticfiles")
-    err := storage.LoadManifest()
+    storage, err := staticfiles.NewStorage("web/staticfiles")
     ```
    
     **Pros**: Run separately from the main application and doesn't influence it startup time.
@@ -42,7 +41,7 @@ There are two ways to collect files:
 2. Collect files every time the program starts
 
     ```go
-    storage := staticfiles.NewStorage("web/staticfiles")
+    storage, err := staticfiles.NewStorage("web/staticfiles")
     storage.AddInputDir("assets/static")
     storage.AddInputDir("media")
     
@@ -61,8 +60,7 @@ to resolve storage file path from its original relative file path:
 staticFilesPrefix := "/static/"
 staticFilesRoot := "output/dir"
 
-storage := NewStorage(staticFilesRoot)
-err := storage.LoadManifest()
+storage, err := NewStorage(staticFilesRoot)
 
 funcs := template.FuncMap{
     "static": func(relPath string) string {

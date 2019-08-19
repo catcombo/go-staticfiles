@@ -57,10 +57,11 @@ func (s *StorageTestSuite) TestCollectStatic() {
 	outputDir := filepath.Join(s.OutputRootDir, suffix)
 	expectedDir := filepath.Join(s.ExpectedRootDir, suffix)
 
-	storage := NewStorage(outputDir)
+	storage, err := NewStorage(outputDir)
+	s.Require().NoError(err)
 	storage.AddInputDir(inputDir)
 
-	err := storage.CollectStatic()
+	err = storage.CollectStatic()
 	s.Require().NoError(err)
 
 	files1, err := s.listDir(expectedDir)
@@ -81,10 +82,11 @@ func (s *StorageTestSuite) TestPostProcess() {
 	outputDir := filepath.Join(s.OutputRootDir, suffix)
 	expectedDir := filepath.Join(s.ExpectedRootDir, suffix)
 
-	storage := NewStorage(outputDir)
+	storage, err := NewStorage(outputDir)
+	s.Require().NoError(err)
 	storage.AddInputDir(inputDir)
 
-	err := storage.CollectStatic()
+	err = storage.CollectStatic()
 	s.Require().NoError(err)
 
 	files1, err := s.listDir(expectedDir)
@@ -119,7 +121,8 @@ func (s *StorageTestSuite) TestPostProcess_UpdateFile() {
 	f.Close()
 
 	// Collect files as usual
-	storage := NewStorage(outputDir)
+	storage, err := NewStorage(outputDir)
+	s.Require().NoError(err)
 	storage.AddInputDir(inputDir)
 
 	err = storage.CollectStatic()
@@ -151,10 +154,11 @@ func (s *StorageTestSuite) TestPostProcess_BrokenURL() {
 	outputDir := filepath.Join(s.OutputRootDir, suffix)
 
 	// Collect files as usual
-	storage := NewStorage(outputDir)
+	storage, err := NewStorage(outputDir)
+	s.Require().NoError(err)
 	storage.AddInputDir(inputDir)
 
-	err := storage.CollectStatic()
+	err = storage.CollectStatic()
 	s.Require().NoError(err)
 
 	s.Require().True(s.compareFiles(
@@ -164,10 +168,11 @@ func (s *StorageTestSuite) TestPostProcess_BrokenURL() {
 }
 
 func (s *StorageTestSuite) TestResolve_CollectStatic() {
-	storage := NewStorage("testdata/output/base")
+	storage, err := NewStorage("testdata/output/base")
+	s.Require().NoError(err)
 	storage.AddInputDir("testdata/input/base")
 
-	err := storage.CollectStatic()
+	err = storage.CollectStatic()
 	s.Require().NoError(err)
 
 	s.Equal("css/style.98718311206ce188bf7260e1d0bbbcea.css", storage.Resolve("css/style.css"))
@@ -175,8 +180,7 @@ func (s *StorageTestSuite) TestResolve_CollectStatic() {
 }
 
 func (s *StorageTestSuite) TestResolve_LoadManifest() {
-	storage := NewStorage("testdata/expected/base")
-	err := storage.LoadManifest()
+	storage, err := NewStorage("testdata/expected/base")
 	s.Require().NoError(err)
 
 	s.Equal("css/style.98718311206ce188bf7260e1d0bbbcea.css", storage.Resolve("css/style.css"))

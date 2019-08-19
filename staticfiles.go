@@ -39,14 +39,19 @@ type Storage struct {
 
 // NewStorage returns new Storage initialized with the root directory and
 // registered rule to post-process CSS files.
-func NewStorage(root string) *Storage {
+func NewStorage(root string) (*Storage, error) {
+	filesMap, err := loadManifest(root)
+	if (err != nil) && !os.IsNotExist(err) {
+		return nil, err
+	}
+
 	s := &Storage{
 		Root:     normalizeDirPath(root),
-		FilesMap: make(map[string]*StaticFile),
+		FilesMap: filesMap,
 	}
 	s.RegisterRule(PostProcessCSS)
 
-	return s
+	return s, nil
 }
 
 func (s *Storage) AddInputDir(path string) {
@@ -192,7 +197,7 @@ func (s *Storage) CollectStatic() error {
 		return err
 	}
 
-	err = s.saveManifest()
+	err = saveManifest(s.Root, s.FilesMap)
 	if err != nil {
 		return err
 	}
