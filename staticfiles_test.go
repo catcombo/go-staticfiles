@@ -104,7 +104,7 @@ func (s *StorageTestSuite) TestPostProcess() {
 
 		s.Require().True(
 			s.compareFiles(expPath, outPath),
-			"The files content `%s` and `%s` differs from each other", expPath, outPath,
+			"The files content of `%s` and `%s` differs from each other", expPath, outPath,
 		)
 	}
 }
@@ -206,20 +206,12 @@ func (s *StorageTestSuite) TestOpen_File() {
 }
 
 func (s *StorageTestSuite) TestOpen_File_Debug() {
-	storage, err := NewStorage("testdata/output")
+	storage, err := NewStorage("testdata/input/debug/output")
 	s.Require().NoError(err)
-
-	storage.AddInputDir("testdata/input/base")
-	err = storage.CollectStatic()
-	s.Require().NoError(err)
-
-	tst, err := os.Create("testdata/input/base/test.file")
-	s.Require().NoError(err)
-	tst.Close()
+	storage.AddInputDir("testdata/input/debug/input")
 
 	storage.Debug = true
-	f, err := storage.Open("test.file")
-	os.Remove("testdata/input/base/test.file")
+	f, err := storage.Open("file.css")
 	s.Assert().NoError(err)
 	s.Assert().NotNil(f)
 }
