@@ -186,3 +186,59 @@ func (s *StorageTestSuite) TestResolve_LoadManifest() {
 	s.Equal("css/style.98718311206ce188bf7260e1d0bbbcea.css", storage.Resolve("css/style.css"))
 	s.Equal("", storage.Resolve("file-not-exist"))
 }
+
+func (s *StorageTestSuite) TestResolve_Debug() {
+	storage, err := NewStorage("testdata/expected/base")
+	s.Require().NoError(err)
+	storage.Debug = true
+
+	s.Equal("css/style.css", storage.Resolve("css/style.css"))
+	s.Equal("null", storage.Resolve("null"))
+}
+
+func (s *StorageTestSuite) TestOpen_File() {
+	storage, err := NewStorage("testdata/input/base")
+	s.Require().NoError(err)
+
+	f, err := storage.Open("css/style.css")
+	s.Assert().NoError(err)
+	s.Assert().NotNil(f)
+}
+
+func (s *StorageTestSuite) TestOpen_File_Debug() {
+	storage, err := NewStorage("testdata/output")
+	s.Require().NoError(err)
+
+	storage.AddInputDir("testdata/input/base")
+	err = storage.CollectStatic()
+	s.Require().NoError(err)
+
+	tst, err := os.Create("testdata/input/base/test.file")
+	s.Require().NoError(err)
+	tst.Close()
+
+	storage.Debug = true
+	f, err := storage.Open("test.file")
+	os.Remove("testdata/input/base/test.file")
+	s.Assert().NoError(err)
+	s.Assert().NotNil(f)
+}
+
+func (s *StorageTestSuite) TestOpen_Dir_ListEnabled() {
+	storage, err := NewStorage("testdata/input/base")
+	s.Require().NoError(err)
+
+	f, err := storage.Open("css")
+	s.Assert().NoError(err)
+	s.Assert().NotNil(f)
+}
+
+func (s *StorageTestSuite) TestOpen_Dir_ListDisabled() {
+	storage, err := NewStorage("testdata/input/base")
+	s.Require().NoError(err)
+
+	storage.OutputDirList = false
+	f, err := storage.Open("css")
+	s.Assert().True(os.IsNotExist(err))
+	s.Assert().Nil(f)
+}

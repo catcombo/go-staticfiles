@@ -14,6 +14,7 @@ import (
 	"encoding/hex"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,9 +32,12 @@ type PostProcessRule func(*Storage, *StaticFile) error
 
 type Storage struct {
 	Root             string
+	outputDirFS      http.FileSystem
 	FilesMap         map[string]*StaticFile
 	postProcessRules []PostProcessRule
 	inputDirs        []string
+	OutputDirList    bool
+	Debug            bool
 	verbose          bool
 }
 
@@ -45,9 +49,12 @@ func NewStorage(root string) (*Storage, error) {
 		return nil, err
 	}
 
+	outputDir := normalizeDirPath(root)
 	s := &Storage{
-		Root:     normalizeDirPath(root),
-		FilesMap: filesMap,
+		Root:          outputDir,
+		OutputDirList: true,
+		outputDirFS:   http.Dir(outputDir),
+		FilesMap:      filesMap,
 	}
 	s.RegisterRule(PostProcessCSS)
 
@@ -205,10 +212,48 @@ func (s *Storage) CollectStatic() error {
 	return nil
 }
 
-// Resolve returns relative storage file path from
-// the relative original file path.
+// Open implements http.FileSystem interface to be used primarily in http.FileServer
+func (s *Storage) Open(path string) (http.File, error) {
+	var f http.File
+	var err error
+
+	if s.Debug {
+		log.Print("Debug mode is enabled. Don't forget to disable it in production.")
+
+		for _, dir := range s.inputDirs {
+			f, err = http.Dir(dir).Open(path)
+			if (err == nil) || !os.IsNotExist(err) {
+				break
+			}
+		}
+	} else {
+		f, err = s.outputDirFS.Open(path)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !s.OutputDirList {
+		stat, err := f.Stat()
+		if err != nil {
+			return nil, err
+		}
+
+		if stat.IsDir() {
+			return nil, os.ErrNotExist
+		}
+	}
+
+	return f, nil
+}
+
+// Resolve returns relative storage file path from the relative original file path.
+// In Debug mode it returns unchanged value passed in the function.
 func (s *Storage) Resolve(relPath string) string {
-	if sf, ok := s.FilesMap[relPath]; ok {
+	if s.Debug {
+		return relPath
+	} else if sf, ok := s.FilesMap[relPath]; ok {
 		return sf.StorageRelPath
 	}
 	return ""

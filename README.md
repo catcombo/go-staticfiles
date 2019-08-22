@@ -74,6 +74,21 @@ Now you can call `static` function in templates like this `{{static "css/style.c
 The generated output will be `/static/css/style.d41d8cd98f00b204e9800998ecf8427e.css` (hash may vary).
 
 
+# Serve static files
+
+To serve static files from the storage output directory pass `storage` as an argument to the `http.FileServer`.
+```go
+storage.OutputDirList = false    // Disable directories listing, optional
+handler := http.StripPrefix(staticFilesPrefix, http.FileServer(storage))
+http.Handle(staticFilesPrefix, handler)
+```
+
+It's often required to change assets during development. `staticfiles` uses cached versions of the original files
+and to refresh files you need to run `collectstatic` every time you change a file. Enable debug mode
+by set `storage.Debug = true` will force `staticfiles` to read original files instead of cached versions.
+Don't forget to disable debug mode in production.
+
+
 # Post-processing
 
 `staticfiles` post-process `.css` files to fix files references.
@@ -102,14 +117,3 @@ div {
 You can add custom rule to post-process files. A rule is a simple function with a signature
 `func(*Storage, *StaticFile) error` which must be registered with `storage.RegisterRule(CustomRule)` 
 See `postprocess.go` as an example of `.css` post-processing implementation.
-
-
-# Disable static directory listing
-
-Its often require to disable directory listing when serving static files via `http.FileServer`.
-`staticfiles` comes with `staticfiles.FileSystem` which implements this feature.
-
-```go
-fs := staticfiles.FileSystem(staticFilesRoot, true)
-h := http.StripPrefix(staticFilesPrefix, http.FileServer(fs))
-```
