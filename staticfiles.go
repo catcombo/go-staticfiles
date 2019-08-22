@@ -38,7 +38,7 @@ type Storage struct {
 	inputDirs        []string
 	OutputDirList    bool
 	Debug            bool
-	verbose          bool
+	Verbose          bool // toggles verbose output to the standard logger
 }
 
 // NewStorage returns new Storage initialized with the root directory and
@@ -67,11 +67,6 @@ func (s *Storage) AddInputDir(path string) {
 
 func (s *Storage) RegisterRule(rule PostProcessRule) {
 	s.postProcessRules = append(s.postProcessRules, rule)
-}
-
-// SetVerboseOutput toggles verbose output to the standard logger.
-func (s *Storage) SetVerboseOutput(verbose bool) {
-	s.verbose = verbose
 }
 
 func (s *Storage) hashFilename(path string) (string, error) {
@@ -141,7 +136,7 @@ func (s *Storage) collectFiles() error {
 					return err
 				}
 
-				if s.verbose {
+				if s.Verbose {
 					log.Printf("Copying '%s'", relPath)
 				}
 
@@ -171,7 +166,7 @@ func (s *Storage) collectFiles() error {
 func (s *Storage) postProcessFiles() error {
 	for _, sf := range s.FilesMap {
 		for _, rule := range s.postProcessRules {
-			if s.verbose {
+			if s.Verbose {
 				log.Printf("Processing '%s'", sf.RelPath)
 			}
 

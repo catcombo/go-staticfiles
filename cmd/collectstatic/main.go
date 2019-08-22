@@ -41,7 +41,7 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	storage.SetVerboseOutput(true)
+	storage.Verbose = true
 
 	for _, dir := range inputDirs {
 		storage.AddInputDir(dir)
