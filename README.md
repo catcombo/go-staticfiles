@@ -1,6 +1,5 @@
 # Overview
 
-[![Build Status](https://travis-ci.org/catcombo/go-staticfiles.svg)](https://travis-ci.org/catcombo/go-staticfiles)
 [![Code Coverage](http://gocover.io/_badge/github.com/catcombo/go-staticfiles)](http://gocover.io/github.com/catcombo/go-staticfiles)
 [![GoDoc](https://godoc.org/github.com/catcombo/go-staticfiles?status.svg)](https://godoc.org/github.com/catcombo/go-staticfiles)
 
