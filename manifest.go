@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-// Manifest file name. It will be stored in the Storage.Root directory.
+// Manifest file name. It will be stored in the Storage.OutputDir directory.
 const ManifestFilename string = "staticfiles.json"
 const ManifestVersion int = 1
 

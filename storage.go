@@ -24,14 +24,14 @@ type StaticFile struct {
 	Path           string // Original file path
 	RelPath        string // Original file path relative to the one of the Storage.inputDirs
 	StoragePath    string // Storage file path
-	StorageRelPath string // Storage file path relative to the Storage.Root
+	StorageRelPath string // Storage file path relative to the Storage.OutputDir
 }
 
 // PostProcessRule describes the type of a post-process rule functions.
 type PostProcessRule func(*Storage, *StaticFile) error
 
 type Storage struct {
-	Root             string
+	OutputDir        string
 	outputDirFS      http.FileSystem
 	FilesMap         map[string]*StaticFile
 	postProcessRules []PostProcessRule
@@ -43,15 +43,15 @@ type Storage struct {
 
 // NewStorage returns new Storage initialized with the root directory and
 // registered rule to post-process CSS files.
-func NewStorage(root string) (*Storage, error) {
-	filesMap, err := loadManifest(root)
+func NewStorage(outputDir string) (*Storage, error) {
+	outputDir = filepath.ToSlash(filepath.Clean(outputDir)) + "/"
+	filesMap, err := loadManifest(outputDir)
 	if (err != nil) && !os.IsNotExist(err) {
 		return nil, err
 	}
 
-	outputDir := filepath.ToSlash(filepath.Clean(root)) + "/"
 	s := &Storage{
-		Root:          outputDir,
+		OutputDir:     outputDir,
 		outputDirFS:   http.Dir(outputDir),
 		FilesMap:      filesMap,
 		OutputDirList: true,
@@ -128,7 +128,7 @@ func (s *Storage) collectFiles() error {
 			}
 
 			relPath := strings.TrimPrefix(path, dir)
-			storageDir := filepath.Join(s.Root, filepath.Dir(relPath))
+			storageDir := filepath.Join(s.OutputDir, filepath.Dir(relPath))
 			storagePath := filepath.ToSlash(filepath.Join(storageDir, filepath.Base(hashedPath)))
 
 			if _, err := os.Stat(storagePath); os.IsNotExist(err) {
@@ -151,7 +151,7 @@ func (s *Storage) collectFiles() error {
 				Path:           path,
 				RelPath:        relPath,
 				StoragePath:    storagePath,
-				StorageRelPath: strings.TrimPrefix(storagePath, s.Root),
+				StorageRelPath: strings.TrimPrefix(storagePath, s.OutputDir),
 			}
 			return nil
 		})
@@ -183,9 +183,9 @@ func (s *Storage) postProcessFiles() error {
 
 // CollectStatic collects files from the Storage.inputDirs (including subdirectories),
 // appends hash sum of each file to its name, applies post-processing rules and
-// copies files and manifest to the Storage.Root directory.
+// copies files and manifest to the Storage.OutputDir directory.
 func (s *Storage) CollectStatic() error {
-	err := os.MkdirAll(s.Root, 0755)
+	err := os.MkdirAll(s.OutputDir, 0755)
 	if err != nil {
 		return err
 	}
@@ -200,7 +200,7 @@ func (s *Storage) CollectStatic() error {
 		return err
 	}
 
-	err = saveManifest(s.Root, s.FilesMap)
+	err = saveManifest(s.OutputDir, s.FilesMap)
 	if err != nil {
 		return err
 	}
