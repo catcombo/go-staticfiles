@@ -1,15 +1,6 @@
 package staticfiles
 
-import (
-	"path/filepath"
-	"regexp"
-)
-
-func normalizeDirPath(path string) string {
-	path = filepath.Clean(path)
-	path = filepath.ToSlash(path)
-	return path + "/"
-}
+import "regexp"
 
 func findSubmatchGroup(regex *regexp.Regexp, s, groupName string) string {
 	matches := regex.FindStringSubmatch(s)

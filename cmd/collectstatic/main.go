@@ -36,14 +36,18 @@ func main() {
 		os.Exit(2)
 	}
 
-	storage := staticfiles.NewStorage(outputDir)
-	storage.SetVerboseOutput(true)
+	storage, err := staticfiles.NewStorage(outputDir)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	storage.Verbose = true
 
 	for _, dir := range inputDirs {
 		storage.AddInputDir(dir)
 	}
 
-	err := storage.CollectStatic()
+	err = storage.CollectStatic()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

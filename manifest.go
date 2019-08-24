@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-// Manifest file name. It will be stored in the Storage.Root directory.
+// Manifest file name. It will be stored in the Storage.OutputDir directory.
 const ManifestFilename string = "staticfiles.json"
 const ManifestVersion int = 1
 
@@ -20,14 +20,14 @@ type ManifestScheme struct {
 	Version int               `json:"version"`
 }
 
-func (s *Storage) saveManifest() error {
-	manifestPath := filepath.Join(s.Root, ManifestFilename)
+func saveManifest(dir string, filesMap map[string]*StaticFile) error {
+	manifestPath := filepath.Join(dir, ManifestFilename)
 	manifest := ManifestScheme{
 		Paths:   make(map[string]string),
 		Version: ManifestVersion,
 	}
 
-	for _, sf := range s.FilesMap {
+	for _, sf := range filesMap {
 		manifest.Paths[sf.RelPath] = sf.StorageRelPath
 	}
 
@@ -44,32 +44,31 @@ func (s *Storage) saveManifest() error {
 	return err
 }
 
-// LoadManifest loads data from ManifestFilename to the Storage.FilesMap.
-func (s *Storage) LoadManifest() error {
+func loadManifest(dir string) (map[string]*StaticFile, error) {
 	var manifest *ManifestScheme
-	manifestPath := filepath.Join(s.Root, ManifestFilename)
+	filesMap := make(map[string]*StaticFile)
+	manifestPath := filepath.Join(dir, ManifestFilename)
 
 	data, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
-		return err
+		return filesMap, err
 	}
 
 	err = json.Unmarshal(data, &manifest)
 	if err != nil {
-		return err
+		return filesMap, err
 	}
 
 	if manifest.Version != ManifestVersion {
-		return ErrManifestVersionMismatch
+		return filesMap, ErrManifestVersionMismatch
 	}
 
-	s.FilesMap = make(map[string]*StaticFile)
 	for relPath, storageRelPath := range manifest.Paths {
-		s.FilesMap[relPath] = &StaticFile{
+		filesMap[relPath] = &StaticFile{
 			RelPath:        relPath,
 			StorageRelPath: storageRelPath,
 		}
 	}
 
-	return nil
+	return filesMap, nil
 }
