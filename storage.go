@@ -49,7 +49,7 @@ func NewStorage(root string) (*Storage, error) {
 		return nil, err
 	}
 
-	outputDir := normalizeDirPath(root)
+	outputDir := filepath.ToSlash(filepath.Clean(root)) + "/"
 	s := &Storage{
 		Root:          outputDir,
 		outputDirFS:   http.Dir(outputDir),
@@ -63,7 +63,7 @@ func NewStorage(root string) (*Storage, error) {
 }
 
 func (s *Storage) AddInputDir(path string) {
-	s.inputDirs = append(s.inputDirs, normalizeDirPath(path))
+	s.inputDirs = append(s.inputDirs, filepath.ToSlash(filepath.Clean(path))+"/")
 }
 
 func (s *Storage) RegisterRule(rule PostProcessRule) {
