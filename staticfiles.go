@@ -14,6 +14,7 @@ import (
 	"encoding/hex"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,22 +32,34 @@ type PostProcessRule func(*Storage, *StaticFile) error
 
 type Storage struct {
 	Root             string
+	outputDirFS      http.FileSystem
 	FilesMap         map[string]*StaticFile
 	postProcessRules []PostProcessRule
 	inputDirs        []string
-	verbose          bool
+	OutputDirList    bool
+	Enabled          bool
+	Verbose          bool // toggles verbose output to the standard logger
 }
 
 // NewStorage returns new Storage initialized with the root directory and
 // registered rule to post-process CSS files.
-func NewStorage(root string) *Storage {
+func NewStorage(root string) (*Storage, error) {
+	filesMap, err := loadManifest(root)
+	if (err != nil) && !os.IsNotExist(err) {
+		return nil, err
+	}
+
+	outputDir := normalizeDirPath(root)
 	s := &Storage{
-		Root:     normalizeDirPath(root),
-		FilesMap: make(map[string]*StaticFile),
+		Root:          outputDir,
+		outputDirFS:   http.Dir(outputDir),
+		FilesMap:      filesMap,
+		OutputDirList: true,
+		Enabled:       true,
 	}
 	s.RegisterRule(PostProcessCSS)
 
-	return s
+	return s, nil
 }
 
 func (s *Storage) AddInputDir(path string) {
@@ -55,11 +68,6 @@ func (s *Storage) AddInputDir(path string) {
 
 func (s *Storage) RegisterRule(rule PostProcessRule) {
 	s.postProcessRules = append(s.postProcessRules, rule)
-}
-
-// SetVerboseOutput toggles verbose output to the standard logger.
-func (s *Storage) SetVerboseOutput(verbose bool) {
-	s.verbose = verbose
 }
 
 func (s *Storage) hashFilename(path string) (string, error) {
@@ -129,7 +137,7 @@ func (s *Storage) collectFiles() error {
 					return err
 				}
 
-				if s.verbose {
+				if s.Verbose {
 					log.Printf("Copying '%s'", relPath)
 				}
 
@@ -159,7 +167,7 @@ func (s *Storage) collectFiles() error {
 func (s *Storage) postProcessFiles() error {
 	for _, sf := range s.FilesMap {
 		for _, rule := range s.postProcessRules {
-			if s.verbose {
+			if s.Verbose {
 				log.Printf("Processing '%s'", sf.RelPath)
 			}
 
@@ -192,7 +200,7 @@ func (s *Storage) CollectStatic() error {
 		return err
 	}
 
-	err = s.saveManifest()
+	err = saveManifest(s.Root, s.FilesMap)
 	if err != nil {
 		return err
 	}
@@ -200,10 +208,48 @@ func (s *Storage) CollectStatic() error {
 	return nil
 }
 
-// Resolve returns relative storage file path from
-// the relative original file path.
+// Open implements http.FileSystem interface to be used primarily in http.FileServer
+func (s *Storage) Open(path string) (http.File, error) {
+	var f http.File
+	var err error
+
+	if !s.Enabled {
+		log.Print("Static storage is disabled. Don't forget to enable it in production.")
+
+		for _, dir := range s.inputDirs {
+			f, err = http.Dir(dir).Open(path)
+			if (err == nil) || !os.IsNotExist(err) {
+				break
+			}
+		}
+	} else {
+		f, err = s.outputDirFS.Open(path)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !s.OutputDirList {
+		stat, err := f.Stat()
+		if err != nil {
+			return nil, err
+		}
+
+		if stat.IsDir() {
+			return nil, os.ErrNotExist
+		}
+	}
+
+	return f, nil
+}
+
+// Resolve returns relative storage file path from the relative original file path.
+// When storage is disabled it returns unchanged value passed in the function.
 func (s *Storage) Resolve(relPath string) string {
-	if sf, ok := s.FilesMap[relPath]; ok {
+	if !s.Enabled {
+		return relPath
+	} else if sf, ok := s.FilesMap[relPath]; ok {
 		return sf.StorageRelPath
 	}
 	return ""

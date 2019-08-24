@@ -33,8 +33,7 @@ func (s *ManifestTestSuite) TearDownTest() {
 }
 
 func (s *ManifestTestSuite) TestManifestNotExist() {
-	storage := NewStorage(s.StoragePath)
-	err := storage.LoadManifest()
+	_, err := loadManifest(s.StoragePath)
 	s.Assert().True(os.IsNotExist(err))
 }
 
@@ -42,8 +41,7 @@ func (s *ManifestTestSuite) TestManifestVersionMismatch() {
 	err := ioutil.WriteFile(s.ManifestPath, []byte(`{"paths":{},"version":0}`), 0644)
 	s.Require().NoError(err)
 
-	storage := NewStorage(s.StoragePath)
-	err = storage.LoadManifest()
+	_, err = loadManifest(s.StoragePath)
 	s.Assert().Equal(ErrManifestVersionMismatch, err)
 }
 
@@ -51,8 +49,7 @@ func (s *ManifestTestSuite) TestLoadManifest() {
 	err := ioutil.WriteFile(s.ManifestPath, []byte(`{"paths":{"style.css":"style.5f15d96d5cdb4d0d5eb6901181826a04.css","pix.png":"pix.3eaf17869bb51bf27bd7c91bc9853973.png"},"version":1}`), 0644)
 	s.Require().NoError(err)
 
-	storage := NewStorage(s.StoragePath)
-	err = storage.LoadManifest()
+	filesMap, err := loadManifest(s.StoragePath)
 	s.Require().NoError(err)
 
 	manifestFilesMap := map[string]*StaticFile{
@@ -65,5 +62,5 @@ func (s *ManifestTestSuite) TestLoadManifest() {
 			StorageRelPath: "pix.3eaf17869bb51bf27bd7c91bc9853973.png",
 		},
 	}
-	s.Assert().Equal(manifestFilesMap, storage.FilesMap)
+	s.Assert().Equal(manifestFilesMap, filesMap)
 }
