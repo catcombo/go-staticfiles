@@ -37,7 +37,7 @@ type Storage struct {
 	postProcessRules []PostProcessRule
 	inputDirs        []string
 	OutputDirList    bool
-	Debug            bool
+	Enabled          bool
 	Verbose          bool // toggles verbose output to the standard logger
 }
 
@@ -52,9 +52,10 @@ func NewStorage(root string) (*Storage, error) {
 	outputDir := normalizeDirPath(root)
 	s := &Storage{
 		Root:          outputDir,
-		OutputDirList: true,
 		outputDirFS:   http.Dir(outputDir),
 		FilesMap:      filesMap,
+		OutputDirList: true,
+		Enabled:       true,
 	}
 	s.RegisterRule(PostProcessCSS)
 
@@ -212,8 +213,8 @@ func (s *Storage) Open(path string) (http.File, error) {
 	var f http.File
 	var err error
 
-	if s.Debug {
-		log.Print("Debug mode is enabled. Don't forget to disable it in production.")
+	if !s.Enabled {
+		log.Print("Static storage is disabled. Don't forget to enable it in production.")
 
 		for _, dir := range s.inputDirs {
 			f, err = http.Dir(dir).Open(path)
@@ -244,9 +245,9 @@ func (s *Storage) Open(path string) (http.File, error) {
 }
 
 // Resolve returns relative storage file path from the relative original file path.
-// In Debug mode it returns unchanged value passed in the function.
+// When storage is disabled it returns unchanged value passed in the function.
 func (s *Storage) Resolve(relPath string) string {
-	if s.Debug {
+	if !s.Enabled {
 		return relPath
 	} else if sf, ok := s.FilesMap[relPath]; ok {
 		return sf.StorageRelPath

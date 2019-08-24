@@ -84,9 +84,9 @@ http.Handle(staticFilesPrefix, handler)
 ```
 
 It's often required to change assets during development. `staticfiles` uses cached versions of the original files
-and to refresh files you need to run `collectstatic` every time you change a file. Enable debug mode
-by set `storage.Debug = true` will force `staticfiles` to read original files instead of cached versions.
-Don't forget to disable debug mode in production.
+and to refresh files you need to run `collectstatic` every time you change a file. Enable development mode
+by set `storage.Enabled = false` will force `storage` to read original files instead of cached versions.
+Don't forget to enable storage back in production.
 
 
 # Post-processing

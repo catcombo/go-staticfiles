@@ -187,10 +187,10 @@ func (s *StorageTestSuite) TestResolve_LoadManifest() {
 	s.Equal("", storage.Resolve("file-not-exist"))
 }
 
-func (s *StorageTestSuite) TestResolve_Debug() {
+func (s *StorageTestSuite) TestResolve_StorageDisabled() {
 	storage, err := NewStorage("testdata/expected/base")
 	s.Require().NoError(err)
-	storage.Debug = true
+	storage.Enabled = false
 
 	s.Equal("css/style.css", storage.Resolve("css/style.css"))
 	s.Equal("null", storage.Resolve("null"))
@@ -205,12 +205,12 @@ func (s *StorageTestSuite) TestOpen_File() {
 	s.Assert().NotNil(f)
 }
 
-func (s *StorageTestSuite) TestOpen_File_Debug() {
-	storage, err := NewStorage("testdata/input/debug/output")
+func (s *StorageTestSuite) TestOpen_File_StorageDisabled() {
+	storage, err := NewStorage("testdata/input/storage_disabled/output")
 	s.Require().NoError(err)
-	storage.AddInputDir("testdata/input/debug/input")
+	storage.AddInputDir("testdata/input/storage_disabled/input")
 
-	storage.Debug = true
+	storage.Enabled = false
 	f, err := storage.Open("file.css")
 	s.Assert().NoError(err)
 	s.Assert().NotNil(f)
