@@ -1,5 +1,6 @@
 # Overview
 
+[![Build Status](https://github.com/catcombo/go-staticfiles/workflows/Go%20tests/badge.svg)](https://github.com/catcombo/go-staticfiles/actions)
 [![Code Coverage](http://gocover.io/_badge/github.com/catcombo/go-staticfiles)](http://gocover.io/github.com/catcombo/go-staticfiles)
 [![GoDoc](https://godoc.org/github.com/catcombo/go-staticfiles?status.svg)](https://godoc.org/github.com/catcombo/go-staticfiles)
 

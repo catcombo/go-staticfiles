@@ -175,7 +175,7 @@ func (s *StorageTestSuite) TestResolve_CollectStatic() {
 	err = storage.CollectStatic()
 	s.Require().NoError(err)
 
-	s.Equal("css/style.98718311206ce188bf7260e1d0bbbcea.css", storage.Resolve("css/style.css"))
+	s.Equal("css/style.98718311206c.css", storage.Resolve("css/style.css"))
 	s.Equal("", storage.Resolve("file-not-exist"))
 }
 
@@ -183,7 +183,7 @@ func (s *StorageTestSuite) TestResolve_LoadManifest() {
 	storage, err := NewStorage("testdata/expected/base")
 	s.Require().NoError(err)
 
-	s.Equal("css/style.98718311206ce188bf7260e1d0bbbcea.css", storage.Resolve("css/style.css"))
+	s.Equal("css/style.98718311206c.css", storage.Resolve("css/style.css"))
 	s.Equal("", storage.Resolve("file-not-exist"))
 }
 

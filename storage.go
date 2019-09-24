@@ -20,6 +20,8 @@ import (
 	"strings"
 )
 
+const hashLength int = 12
+
 type StaticFile struct {
 	Path           string // Original file path
 	RelPath        string // Original file path relative to the one of the Storage.inputDirs
@@ -84,7 +86,7 @@ func (s *Storage) hashFilename(path string) (string, error) {
 
 	ext := filepath.Ext(path)
 	prefix := strings.TrimSuffix(path, ext)
-	sum := hex.EncodeToString(hash.Sum(nil))
+	sum := hex.EncodeToString(hash.Sum(nil))[:hashLength]
 
 	return prefix + "." + sum + ext, nil
 }
