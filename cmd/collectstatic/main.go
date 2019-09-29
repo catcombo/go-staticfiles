@@ -7,27 +7,25 @@ import (
 	"os"
 )
 
-type dirSliceValue []string
+type arrayString []string
 
-func (s *dirSliceValue) String() string {
-	return fmt.Sprintf("%v", *s)
+func (a *arrayString) String() string {
+	return fmt.Sprintf("%v", *a)
 }
 
-func (s *dirSliceValue) Set(value string) error {
-	if _, err := os.Stat(value); err != nil {
-		return err
-	}
-
-	*s = append(*s, value)
+func (a *arrayString) Set(value string) error {
+	*a = append(*a, value)
 	return nil
 }
 
 func main() {
 	var outputDir string
 	var inputDirs []string
+	var ignorePatterns []string
 
 	flag.StringVar(&outputDir, "output", "", "Output directory (required)")
-	flag.Var((*dirSliceValue)(&inputDirs), "input", "Input directory(ies)")
+	flag.Var((*arrayString)(&inputDirs), "input", "Input directory(ies)")
+	flag.Var((*arrayString)(&ignorePatterns), "ignore", "Ignore files, directories, or paths matching glob-style pattern")
 	flag.Parse()
 
 	if outputDir == "" {
@@ -45,6 +43,10 @@ func main() {
 
 	for _, dir := range inputDirs {
 		storage.AddInputDir(dir)
+	}
+
+	for _, pattern := range ignorePatterns {
+		storage.AddIgnorePattern(pattern)
 	}
 
 	err = storage.CollectStatic()

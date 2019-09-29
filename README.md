@@ -26,7 +26,7 @@ There are two ways to collect files:
 
 1. Using command line tool
 
-    Run `collectstatic --output web/staticfiles --input assets/static --input media/`
+    Run `collectstatic --output web/staticfiles --input assets/static --input media/ --ignore **/*.pdf`
 
     Init storage in your code:
     ```go
@@ -44,6 +44,7 @@ There are two ways to collect files:
     storage, err := staticfiles.NewStorage("web/staticfiles")
     storage.AddInputDir("assets/static")
     storage.AddInputDir("media")
+    storage.AddIgnorePattern("**/*.pdf")
     
     err := storage.CollectStatic()
     ```
