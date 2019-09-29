@@ -128,6 +128,7 @@ func (s *Storage) collectFiles() error {
 				return nil
 			}
 
+			path = filepath.ToSlash(path)
 			relPath := strings.TrimPrefix(path, dir)
 			for _, pattern := range s.ignorePatterns {
 				if ok, err := filepath.Match(pattern, relPath); ok || err != nil {
@@ -135,7 +136,6 @@ func (s *Storage) collectFiles() error {
 				}
 			}
 
-			path = filepath.ToSlash(path)
 			hashedPath, err := s.hashFilename(path)
 			if err != nil {
 				return err
