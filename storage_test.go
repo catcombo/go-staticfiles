@@ -76,6 +76,32 @@ func (s *StorageTestSuite) TestCollectStatic() {
 	)
 }
 
+func (s *StorageTestSuite) TestIgnorePatterns() {
+	inputDir := filepath.Join(s.InputRootDir, "base")
+	outputDir := filepath.Join(s.OutputRootDir, "ignore")
+	expectedDir := filepath.Join(s.ExpectedRootDir, "ignore")
+
+	storage, err := NewStorage(outputDir)
+	s.Require().NoError(err)
+	storage.AddInputDir(inputDir)
+	storage.AddIgnorePattern("css/import.css")
+	storage.AddIgnorePattern("**/*.png")
+
+	err = storage.CollectStatic()
+	s.Require().NoError(err)
+
+	files1, err := s.listDir(expectedDir)
+	s.Require().NoError(err)
+
+	files2, err := s.listDir(outputDir)
+	s.Require().NoError(err)
+
+	s.True(
+		reflect.DeepEqual(files1, files2),
+		"The list of files in `%s` and `%s` differs from each other", expectedDir, outputDir,
+	)
+}
+
 func (s *StorageTestSuite) TestPostProcess() {
 	suffix := "base"
 	inputDir := filepath.Join(s.InputRootDir, suffix)

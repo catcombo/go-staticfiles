@@ -41,6 +41,7 @@ type Storage struct {
 	OutputDirList    bool
 	Enabled          bool
 	Verbose          bool // toggles verbose output to the standard logger
+	ignorePatterns   []string
 }
 
 // NewStorage returns new Storage initialized with the root directory and
@@ -66,6 +67,10 @@ func NewStorage(outputDir string) (*Storage, error) {
 
 func (s *Storage) AddInputDir(path string) {
 	s.inputDirs = append(s.inputDirs, filepath.ToSlash(filepath.Clean(path))+"/")
+}
+
+func (s *Storage) AddIgnorePattern(pattern string) {
+	s.ignorePatterns = append(s.ignorePatterns, pattern)
 }
 
 func (s *Storage) RegisterRule(rule PostProcessRule) {
@@ -123,13 +128,19 @@ func (s *Storage) collectFiles() error {
 				return nil
 			}
 
+			relPath := strings.TrimPrefix(path, dir)
+			for _, pattern := range s.ignorePatterns {
+				if ok, err := filepath.Match(pattern, relPath); ok || err != nil {
+					return nil
+				}
+			}
+
 			path = filepath.ToSlash(path)
 			hashedPath, err := s.hashFilename(path)
 			if err != nil {
 				return err
 			}
 
-			relPath := strings.TrimPrefix(path, dir)
 			storageDir := filepath.Join(s.OutputDir, filepath.Dir(relPath))
 			storagePath := filepath.ToSlash(filepath.Join(storageDir, filepath.Base(hashedPath)))
 
